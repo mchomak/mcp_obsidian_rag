@@ -1,0 +1,8 @@
+mcp
+chromadb
+ollama
+watchdog
+python-dotenv
+python-slugify
+python-frontmatter
+tqdm
