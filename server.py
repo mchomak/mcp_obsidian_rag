@@ -1,13 +1,16 @@
 import atexit
 import logging
+import re
 import sys
 from datetime import datetime, timezone
+from pathlib import Path
 
 import frontmatter
 from mcp.server.fastmcp import FastMCP
 from slugify import slugify
 
 from config import VAULT_PATH
+from conventions import format_conventions_for_claude, get_approved_tags
 from embeddings import ping
 from indexer import (
     get_collection,
@@ -20,6 +23,10 @@ from watcher import start_watching
 logger = logging.getLogger(__name__)
 
 mcp = FastMCP("obsidian-rag")
+
+RELATED_THRESHOLD = 0.65
+RELATED_TOP_K = 3
+_WIKI_LINK_RE = re.compile(r"\[\[([^\[\]|]+?)(?:\|[^\[\]]*)?\]\]")
 
 
 # --- Formatting ---
@@ -64,11 +71,65 @@ def _format_notes(project: str, notes: list[dict]) -> str:
     return "\n".join(lines)
 
 
+# --- Helpers for create_note ---
+
+def _extract_wiki_link_targets(text: str) -> set[str]:
+    """Filename stems referenced inline as [[...]] in `text`."""
+    return {m.group(1).strip() for m in _WIKI_LINK_RE.finditer(text)}
+
+
+def _find_related_notes(
+    query: str,
+    exclude_stems: set[str],
+    exclude_source: str,
+) -> list[str]:
+    """Return up to RELATED_TOP_K filename stems above similarity threshold."""
+    try:
+        results = _indexer_search(query, top_k=RELATED_TOP_K + 5)
+    except Exception:
+        logger.exception("Related notes search failed")
+        return []
+
+    out: list[str] = []
+    seen: set[str] = set()
+    for r in results:
+        if r["score"] < RELATED_THRESHOLD:
+            continue
+        if r["source"] == exclude_source:
+            continue
+        stem = Path(r["source"]).stem
+        if not stem or stem in seen or stem in exclude_stems:
+            continue
+        seen.add(stem)
+        out.append(stem)
+        if len(out) >= RELATED_TOP_K:
+            break
+    return out
+
+
 # --- Tools ---
 
 @mcp.tool()
+def get_vault_conventions() -> str:
+    """Return the vault's approved tag vocabulary, frontmatter rules, and wiki-link conventions.
+
+    YOU MUST call this BEFORE `create_note`, especially in a new conversation — tag names
+    are pulled from the user's vault CLAUDE.md and can change. Use the returned categories
+    to pick semantically correct tags for the note you are about to create."""
+    try:
+        return format_conventions_for_claude()
+    except Exception as exc:
+        logger.exception("get_vault_conventions failed")
+        return f"Error: {exc}"
+
+
+@mcp.tool()
 def search_knowledge_base(query: str) -> str:
-    """Search personal knowledge base from Obsidian vault. Use this to find context about specific projects, clients, workflow procedures, past decisions, personal preferences, team members, recurring errors, or any domain knowledge stored in notes. Call this before answering any question that might benefit from personal context."""
+    """Search personal knowledge base from Obsidian vault. Use this to find context about specific projects, clients, workflow procedures, past decisions, personal preferences, team members, recurring errors, or any domain knowledge stored in notes.
+
+    Call this BEFORE answering any question that might benefit from personal context, AND
+    before `create_note` — search results give you candidate notes to reference inline as
+    `[[wiki-links]]` so the new note is connected in the Obsidian graph."""
     try:
         return _format_search_results(_indexer_search(query))
     except Exception as exc:
@@ -84,7 +145,20 @@ def create_note(
     tags: list[str] | None = None,
     note_type: str = "note",
 ) -> str:
-    """Create a new note in the Obsidian vault linked to a project. Use proactively when encountering an unusual error (record: what happened, why, how fixed), making an architectural decision, or discovering something worth remembering across sessions. Tags must be specific and searchable."""
+    """Create a new note in the Obsidian vault linked to a project.
+
+    BEFORE calling this tool you MUST:
+      1. Call `get_vault_conventions()` to learn the approved tag vocabulary.
+      2. Call `search_knowledge_base(<topic>)` to find related notes and embed
+         `[[Filename]]` wiki-links in `content` where they fit by meaning.
+
+    Use proactively when encountering an unusual error (record: what happened, why, how
+    fixed), making an architectural decision, or discovering something worth remembering
+    across sessions. Tags must be specific and searchable.
+
+    Tag validation is permissive: unknown tags trigger a warning, not an error.
+    The server will append a `## 🔗 Связанные заметки` section with top semantically
+    similar notes (deduplicated against any wiki-links already in `content`)."""
     title = (title or "").strip()
     project = (project or "").strip()
     content = (content or "").strip()
@@ -97,7 +171,14 @@ def create_note(
     if not content:
         return "Error: content is required"
 
-    tags_list = [str(t) for t in (tags or []) if str(t).strip()]
+    tags_list = [str(t).strip() for t in (tags or []) if str(t).strip()]
+
+    approved = get_approved_tags()
+    unknown_tags: list[str] = []
+    if approved:
+        unknown_tags = [t for t in tags_list if t not in approved]
+        if unknown_tags:
+            logger.warning("create_note: unknown tags %s", unknown_tags)
 
     slug = slugify(title, lowercase=True, max_length=80) or "untitled"
 
@@ -113,8 +194,23 @@ def create_note(
         ts = datetime.now().strftime("%Y%m%d-%H%M%S")
         target = target_dir / f"{slug}-{ts}.md"
 
+    rel = target.relative_to(VAULT_PATH).as_posix()
+
+    inline_link_stems = _extract_wiki_link_targets(content)
+    related_stems = _find_related_notes(
+        query=f"{title}\n\n{content}",
+        exclude_stems=inline_link_stems | {target.stem},
+        exclude_source=rel,
+    )
+
+    full_content = content
+    if related_stems:
+        full_content += "\n\n## 🔗 Связанные заметки\n"
+        full_content += "\n".join(f"- [[{stem}]]" for stem in related_stems)
+        full_content += "\n"
+
     post = frontmatter.Post(
-        content,
+        full_content,
         title=title,
         project=project,
         tags=tags_list,
@@ -128,14 +224,22 @@ def create_note(
         logger.exception("create_note write failed")
         return f"Error: cannot write file {target}: {exc}"
 
-    rel = target.relative_to(VAULT_PATH).as_posix()
     logger.info("Created note: %s", rel)
-    return f"Created: {rel}"
+
+    out_lines = [f"Created: {rel}"]
+    if related_stems:
+        out_lines.append(f"Related: {', '.join(related_stems)}")
+    if unknown_tags:
+        out_lines.append(
+            f"Warning: tag(s) not in approved list — {', '.join(unknown_tags)}. "
+            "Call get_vault_conventions() to see the approved set."
+        )
+    return "\n".join(out_lines)
 
 
 @mcp.tool()
 def list_projects() -> str:
-    """Returns the list of unique projects from the indexed Obsidian vault. Helps identify available project contexts before performing a search or listing notes."""
+    """Return the list of unique projects from the indexed Obsidian vault. Helps identify available project contexts before performing a search or listing notes."""
     try:
         return _format_projects(_indexer_list_projects())
     except Exception as exc:
@@ -145,7 +249,7 @@ def list_projects() -> str:
 
 @mcp.tool()
 def get_project_notes(project: str) -> str:
-    """Returns all notes for a specific project. Use when you need the full context of a project rather than a targeted semantic search."""
+    """Return all notes for a specific project. Use when you need the full context of a project rather than a targeted semantic search."""
     project = (project or "").strip()
     if not project:
         return "Error: project is required"

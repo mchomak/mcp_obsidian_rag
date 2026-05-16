@@ -14,6 +14,9 @@
 - **Создание заметок** напрямую из чата (Claude может писать в твой vault)
 - **Авто-переиндексация** при изменениях файлов (file watcher, debounce 500мс)
 - **Группировка по проектам** через YAML frontmatter
+- **Валидация тегов** по утверждённому словарю из `{VAULT}/CLAUDE.md`
+- **Автоматические wiki-ссылки** — при создании заметки сервер сам дописывает `## 🔗 Связанные заметки` с семантически близкими заметками из vault
+- **Аудит тегов** — CLI-скрипт показывает расхождения между реальными и утверждёнными тегами
 
 ---
 
@@ -126,7 +129,7 @@ claude mcp add obsidian-rag --scope user -- \
 
 `--scope user` — сервер будет доступен во всех проектах Claude Code. Замени на `--scope project`, чтобы конфиг лёг только в текущий проект (`.mcp.json`).
 
-Перезапусти Claude Code (закрой и открой окно VSCode заново). В чате набери `/mcp` — должен быть `obsidian-rag` со статусом *connected* и 4 инструмента.
+Перезапусти Claude Code (закрой и открой окно VSCode заново). В чате набери `/mcp` — должен быть `obsidian-rag` со статусом *connected* и 5 инструментов.
 
 ---
 
@@ -135,9 +138,44 @@ claude mcp add obsidian-rag --scope user -- \
 | Tool | Параметры | Назначение |
 |---|---|---|
 | `search_knowledge_base` | `query` | Семантический поиск по vault |
-| `create_note` | `title`, `content`, `project`, `tags?`, `note_type?` | Создание новой заметки |
+| `get_vault_conventions` | — | Утверждённые теги и правила создания заметок |
+| `create_note` | `title`, `content`, `project`, `tags?`, `note_type?` | Создание заметки с автодобавлением связанных |
 | `list_projects` | — | Список проектов из индекса |
 | `get_project_notes` | `project` | Все заметки проекта |
+
+### Рабочий процесс Claude при создании заметок
+
+Claude должен вызывать инструменты в следующем порядке:
+
+1. `get_vault_conventions()` — узнать утверждённые теги
+2. `search_knowledge_base(<тема>)` — найти связанные заметки, вставить `[[wiki-links]]` в текст
+3. `create_note(...)` — создать заметку с правильными тегами и ссылками
+
+Сервер автоматически дополняет заметку секцией `## 🔗 Связанные заметки` (top-3 по косинусному сходству, порог 0.65), исключая ссылки которые Claude уже вставил inline.
+
+### Словарь утверждённых тегов
+
+Теги для `create_note` берутся из `{VAULT}/CLAUDE.md` — секция между маркерами `<!-- TAGS_START -->` и `<!-- TAGS_END -->`. Поддерживаются два формата:
+
+```markdown
+<!-- TAGS_START -->
+**Категория:**
+- `tag` — описание тега
+<!-- TAGS_END -->
+```
+
+Если маркеров нет — парсер ищет заголовок `#### Утверждённые теги по категориям` как fallback.
+
+Неизвестный тег не блокирует создание заметки: сервер создаёт файл, но возвращает warning.
+
+### Аудит тегов
+
+```bash
+python tags_audit.py            # сводный отчёт
+python tags_audit.py --show-files   # + список файлов с неутверждёнными тегами
+```
+
+Выводит три раздела: теги из заметок которых нет в утверждённом списке (с fuzzy-подсказками), утверждённые теги которые ни разу не использовались, топ-20 по частоте использования.
 
 ---
 
@@ -210,10 +248,10 @@ created: 2026-05-15T10:30:00
 ```
 Claude Code (VSCode / CLI)
     ↕ MCP protocol (stdio)
-server.py  ─── FastMCP, 4 tools, lifecycle
-    ↕
-indexer.py ─── parse → chunk → embed → upsert
-    ↕                      ↕
+server.py  ─── FastMCP, 5 tools, lifecycle
+    ↕                    ↕
+indexer.py          conventions.py ─── {VAULT}/CLAUDE.md
+    ↕                      ↕              (approved tags)
 ChromaDB                Ollama
 (./data/chromadb)       (nomic-embed-text, 768-dim)
     ↑
@@ -227,8 +265,9 @@ Obsidian Vault (*.md, рекурсивно)
 | Config | [config.py](config.py) | — |
 | Adapter | [embeddings.py](embeddings.py) | config |
 | Domain | [indexer.py](indexer.py) | config, embeddings, chromadb |
+| Conventions | [conventions.py](conventions.py) | config |
 | Events | [watcher.py](watcher.py) | indexer, watchdog |
-| MCP | [server.py](server.py) | indexer, watcher, mcp |
+| MCP | [server.py](server.py) | indexer, watcher, conventions, mcp |
 
 Полная спецификация и архитектурные решения — в [CLAUDE.md](CLAUDE.md).
 
@@ -279,7 +318,9 @@ mcp_obsidian_rag/
 ├── embeddings.py       # обёртка над Ollama
 ├── indexer.py          # parse → chunk → embed → upsert / search
 ├── watcher.py          # watchdog + debounce
-├── server.py           # MCP-сервер, 4 tool'а
+├── conventions.py      # парсер тегов из {VAULT}/CLAUDE.md
+├── server.py           # MCP-сервер, 5 tool'ов
+├── tags_audit.py       # CLI-аудит тегов (read-only)
 └── data/
     └── chromadb/       # векторная БД (не в git)
 ```
