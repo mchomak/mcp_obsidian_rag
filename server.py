@@ -15,6 +15,7 @@ from embeddings import ping
 from indexer import (
     get_collection,
     get_project_notes as _indexer_get_project_notes,
+    list_notes_by_filter as _indexer_list_notes,
     list_projects as _indexer_list_projects,
     search as _indexer_search,
 )
@@ -262,6 +263,50 @@ def get_project_notes(project: str) -> str:
         return _format_notes(project, _indexer_get_project_notes(project))
     except Exception as exc:
         logger.exception("get_project_notes failed")
+        return f"Error: {exc}"
+
+
+@mcp.tool()
+def list_notes(folder: str = "", note_type: str = "", limit: int = 200) -> str:
+    """List notes in the vault filtered by folder and/or frontmatter type.
+
+    Use this to get a COMPLETE list of notes before reorganizing — unlike
+    `search_knowledge_base`, this is not semantic and returns every matching file.
+
+    Parameters:
+      `folder`    — relative path inside vault (e.g. "Ideas", "Notes/Learning/ML").
+                    Empty string = entire vault (excluding protected dirs).
+      `note_type` — match `type:` field in frontmatter (e.g. "idea", "reference").
+                    Empty string = any type.
+      `limit`     — max results (default 200).
+
+    Reads from filesystem directly, so captures files not yet indexed in ChromaDB.
+    Protected dirs (_Secrets/, templates/, .obsidian/) are always excluded.
+    """
+    try:
+        notes = _indexer_list_notes(folder=folder, note_type=note_type, limit=limit)
+        if not notes:
+            parts = []
+            if folder:
+                parts.append(f"folder='{folder}'")
+            if note_type:
+                parts.append(f"type='{note_type}'")
+            return f"No notes found" + (f" matching {', '.join(parts)}" if parts else "")
+
+        lines = [f"Found {len(notes)} note(s):\n"]
+        for n in notes:
+            meta_parts = []
+            if n["type"]:
+                meta_parts.append(f"type:{n['type']}")
+            if n["status"]:
+                meta_parts.append(f"status:{n['status']}")
+            if n["tags"]:
+                meta_parts.append(f"tags:[{', '.join(n['tags'][:3])}{'...' if len(n['tags']) > 3 else ''}]")
+            meta = f"  ({' | '.join(meta_parts)})" if meta_parts else ""
+            lines.append(f"- {n['source']}{meta}")
+        return "\n".join(lines)
+    except Exception as exc:
+        logger.exception("list_notes failed")
         return f"Error: {exc}"
 
 

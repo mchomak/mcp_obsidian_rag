@@ -13,13 +13,13 @@ import frontmatter
 from tqdm import tqdm
 
 from config import (
-    VAULT_PATH,
+    CHUNK_OVERLAP,
+    CHUNK_SIZE,
     CHROMA_DB_PATH,
     COLLECTION_NAME,
-    CHUNK_SIZE,
-    CHUNK_OVERLAP,
-    TOP_K_RESULTS,
     EXCLUDED_DIRS,
+    TOP_K_RESULTS,
+    VAULT_PATH,
 )
 from embeddings import embed_batch, embed_text, ping
 
@@ -337,6 +337,60 @@ def list_projects() -> list[str]:
         if p:
             projects.add(p)
     return sorted(projects)
+
+
+def list_notes_by_filter(
+    folder: str = "",
+    note_type: str = "",
+    limit: int = 200,
+) -> list[dict[str, Any]]:
+    """Return notes from the filesystem matching folder prefix and/or note_type.
+
+    Reads directly from disk (not ChromaDB) so captures unindexed files too.
+    """
+    folder_prefix = (folder.strip("/").replace("\\", "/") + "/") if folder.strip("/") else ""
+    results: list[dict[str, Any]] = []
+
+    for path in VAULT_PATH.rglob("*.md"):
+        if not path.is_file():
+            continue
+        try:
+            rel = path.relative_to(VAULT_PATH).as_posix()
+        except ValueError:
+            continue
+
+        parts = rel.split("/")
+        if parts and (parts[0] in EXCLUDED_DIRS or parts[0].startswith(".")):
+            continue
+        if folder_prefix and not rel.startswith(folder_prefix):
+            continue
+
+        try:
+            post = frontmatter.load(path)
+            meta = dict(post.metadata or {})
+        except Exception:
+            meta = {}
+
+        if note_type and meta.get("type", "") != note_type:
+            continue
+
+        tags_raw = meta.get("tags") or []
+        if not isinstance(tags_raw, list):
+            tags_raw = [str(tags_raw)]
+
+        results.append({
+            "source": rel,
+            "title": str(meta.get("title") or path.stem),
+            "type": str(meta.get("type") or ""),
+            "tags": [str(t) for t in tags_raw],
+            "project": str(meta.get("project") or ""),
+            "status": str(meta.get("status") or ""),
+        })
+
+        if len(results) >= limit:
+            break
+
+    return sorted(results, key=lambda x: x["source"])
 
 
 def get_project_notes(project: str) -> list[dict[str, Any]]:
