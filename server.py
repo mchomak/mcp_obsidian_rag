@@ -2,6 +2,7 @@ import atexit
 import logging
 import re
 import sys
+import threading
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -409,29 +410,35 @@ def _startup() -> None:
             "Ollama is not reachable or embedding model is missing. "
             "Start Ollama and run: ollama pull nomic-embed-text"
         )
-        sys.exit(1)
+        return
 
-    count = get_collection().count()
-    if count == 0:
-        logger.warning(
-            "ChromaDB collection is empty. Run first: python indexer.py --full-scan"
-        )
-    else:
-        logger.info("Indexed chunks loaded: %d", count)
+    try:
+        count = get_collection().count()
+        if count == 0:
+            logger.warning(
+                "ChromaDB collection is empty. Run first: python indexer.py --full-scan"
+            )
+        else:
+            logger.info("Indexed chunks loaded: %d", count)
+    except Exception:
+        logger.exception("Failed to read ChromaDB collection count")
 
-    observer = start_watching()
+    try:
+        observer = start_watching()
 
-    def _shutdown() -> None:
-        try:
-            observer.stop()
-            observer.join(timeout=5)
-            logger.info("Watcher stopped")
-        except Exception:
-            pass
+        def _shutdown() -> None:
+            try:
+                observer.stop()
+                observer.join(timeout=5)
+                logger.info("Watcher stopped")
+            except Exception:
+                pass
 
-    atexit.register(_shutdown)
+        atexit.register(_shutdown)
+    except Exception:
+        logger.exception("Failed to start vault watcher")
 
 
 if __name__ == "__main__":
-    _startup()
+    threading.Thread(target=_startup, daemon=True).start()
     mcp.run()

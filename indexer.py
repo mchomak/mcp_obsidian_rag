@@ -27,14 +27,22 @@ logger = logging.getLogger(__name__)
 
 _write_lock = threading.Lock()
 
-_chroma = chromadb.PersistentClient(path=str(CHROMA_DB_PATH))
-_collection = _chroma.get_or_create_collection(
-    name=COLLECTION_NAME,
-    metadata={"hnsw:space": "cosine"},
-)
+_chroma = None
+_collection = None
+_init_lock = threading.Lock()
 
 
 def get_collection():
+    global _chroma, _collection
+    if _collection is not None:
+        return _collection
+    with _init_lock:
+        if _collection is None:
+            _chroma = chromadb.PersistentClient(path=str(CHROMA_DB_PATH))
+            _collection = _chroma.get_or_create_collection(
+                name=COLLECTION_NAME,
+                metadata={"hnsw:space": "cosine"},
+            )
     return _collection
 
 
@@ -181,8 +189,9 @@ def reindex_file(path: Path) -> bool:
         return False
     if _is_excluded(rel_source):
         with _write_lock:
-            if _collection.get(where={"source": rel_source}, limit=1)["ids"]:
-                _collection.delete(where={"source": rel_source})
+            col = get_collection()
+            if col.get(where={"source": rel_source}, limit=1)["ids"]:
+                col.delete(where={"source": rel_source})
                 logger.info("Removed (now in excluded dir): %s", rel_source)
         return False
 
@@ -193,7 +202,8 @@ def reindex_file(path: Path) -> bool:
         return False
 
     with _write_lock:
-        existing = _collection.get(
+        col = get_collection()
+        existing = col.get(
             where={"source": rel_source},
             limit=1,
             include=["metadatas"],
@@ -212,7 +222,7 @@ def reindex_file(path: Path) -> bool:
         chunks = chunk_body(body)
         if not chunks:
             logger.debug("Empty body, removing if present: %s", rel_source)
-            _collection.delete(where={"source": rel_source})
+            col.delete(where={"source": rel_source})
             return False
 
         embed_inputs = [
@@ -229,8 +239,8 @@ def reindex_file(path: Path) -> bool:
         metadatas = [_build_metadata(rel_source, file_meta, c, mtime) for c in chunks]
         documents = [c["text"] for c in chunks]
 
-        _collection.delete(where={"source": rel_source})
-        _collection.upsert(
+        col.delete(where={"source": rel_source})
+        col.upsert(
             ids=ids,
             embeddings=vectors,
             metadatas=metadatas,
@@ -249,10 +259,11 @@ def remove_file(path: Path) -> bool:
         return False
 
     with _write_lock:
-        existing = _collection.get(where={"source": rel_source}, include=["metadatas"])
+        col = get_collection()
+        existing = col.get(where={"source": rel_source}, include=["metadatas"])
         if not existing["ids"]:
             return False
-        _collection.delete(where={"source": rel_source})
+        col.delete(where={"source": rel_source})
         logger.info("Removed %s (%d chunks)", rel_source, len(existing["ids"]))
         return True
 
@@ -300,7 +311,7 @@ def search(query: str, top_k: int = TOP_K_RESULTS) -> list[dict[str, Any]]:
         return []
 
     query_vec = embed_text(query)
-    results = _collection.query(
+    results = get_collection().query(
         query_embeddings=[query_vec],
         n_results=top_k,
         include=["metadatas", "documents", "distances"],
@@ -330,7 +341,7 @@ def search(query: str, top_k: int = TOP_K_RESULTS) -> list[dict[str, Any]]:
 
 
 def list_projects() -> list[str]:
-    all_meta = _collection.get(include=["metadatas"])
+    all_meta = get_collection().get(include=["metadatas"])
     projects = set()
     for m in all_meta.get("metadatas") or []:
         p = m.get("project")
@@ -396,7 +407,7 @@ def list_notes_by_filter(
 def get_project_notes(project: str) -> list[dict[str, Any]]:
     if not project:
         return []
-    results = _collection.get(
+    results = get_collection().get(
         where={"project": project},
         include=["metadatas"],
     )
