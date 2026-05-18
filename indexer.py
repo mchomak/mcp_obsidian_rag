@@ -19,6 +19,7 @@ from config import (
     CHUNK_SIZE,
     CHUNK_OVERLAP,
     TOP_K_RESULTS,
+    EXCLUDED_DIRS,
 )
 from embeddings import embed_batch, embed_text, ping
 
@@ -45,6 +46,13 @@ def _relative_source(path: Path) -> str:
 
 def _is_hidden(rel_source: str) -> bool:
     return any(p.startswith(".") for p in rel_source.split("/"))
+
+
+def _is_excluded(rel_source: str) -> bool:
+    parts = rel_source.split("/")
+    if not parts:
+        return False
+    return parts[0] in EXCLUDED_DIRS
 
 
 def _is_in_vault(path: Path) -> bool:
@@ -171,6 +179,12 @@ def reindex_file(path: Path) -> bool:
     rel_source = _relative_source(path)
     if _is_hidden(rel_source):
         return False
+    if _is_excluded(rel_source):
+        with _write_lock:
+            if _collection.get(where={"source": rel_source}, limit=1)["ids"]:
+                _collection.delete(where={"source": rel_source})
+                logger.info("Removed (now in excluded dir): %s", rel_source)
+        return False
 
     try:
         mtime = path.stat().st_mtime
@@ -255,6 +269,8 @@ def iter_vault_md_files() -> list[Path]:
         except ValueError:
             continue
         if _is_hidden(rel):
+            continue
+        if _is_excluded(rel):
             continue
         files.append(p)
     return files

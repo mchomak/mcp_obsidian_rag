@@ -54,6 +54,18 @@ CHUNK_SIZE: int = _get_int("CHUNK_SIZE", 1000)
 CHUNK_OVERLAP: int = _get_int("CHUNK_OVERLAP", 200)
 TOP_K_RESULTS: int = _get_int("TOP_K_RESULTS", 5)
 
+
+def _parse_excluded_dirs(raw: str) -> tuple[str, ...]:
+    items = [p.strip().strip("/\\") for p in raw.split(",")]
+    return tuple(p for p in items if p)
+
+
+EXCLUDED_DIRS: tuple[str, ...] = _parse_excluded_dirs(
+    os.getenv("EXCLUDED_DIRS", "_Secrets,templates")
+)
+
+ARCHIVE_DIR_NAME: str = os.getenv("ARCHIVE_DIR_NAME", "Archive").strip() or "Archive"
+
 COLLECTION_NAME: str = "obsidian_notes"
 EMBED_DIM: int = 768
 

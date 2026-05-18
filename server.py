@@ -18,6 +18,11 @@ from indexer import (
     list_projects as _indexer_list_projects,
     search as _indexer_search,
 )
+from note_ops import (
+    delete_note as _ops_delete_note,
+    edit_note as _ops_edit_note,
+    move_note as _ops_move_note,
+)
 from watcher import start_watching
 
 logger = logging.getLogger(__name__)
@@ -257,6 +262,97 @@ def get_project_notes(project: str) -> str:
         return _format_notes(project, _indexer_get_project_notes(project))
     except Exception as exc:
         logger.exception("get_project_notes failed")
+        return f"Error: {exc}"
+
+
+@mcp.tool()
+def edit_note(path: str, mode: str, payload: dict) -> str:
+    """Точечное редактирование существующей заметки.
+
+    Полный rewrite запрещён намеренно — чтобы случайно не уничтожить заметку.
+    Если нужна радикальная переработка: `delete_note` (soft-archive) + `create_note`.
+
+    Поддерживаемые `mode` + структура `payload`:
+
+      `append_section`     — добавить НОВУЮ секцию в конец файла.
+                             payload: {"heading": "Название H2", "content": "..."}
+                             Ошибка, если секция уже есть — используй replace/append_to.
+
+      `replace_section`    — полностью заменить содержимое существующей секции.
+                             payload: {"heading": "...", "content": "..."}
+
+      `append_to_section`  — дописать текст в конец существующей секции.
+                             payload: {"heading": "...", "content": "..."}
+
+      `update_frontmatter` — изменить одно поле YAML frontmatter (кроме tags).
+                             payload: {"key": "status", "value": "validated"}
+
+      `add_tag`            — добавить тег в frontmatter `tags:`.
+                             payload: {"tag": "ml"}
+
+      `remove_tag`         — удалить тег из frontmatter `tags:`.
+                             payload: {"tag": "raw"}
+
+    `path` — относительно vault (например `Notes/Learning/ML/Regression.md`) или абсолютный.
+    Запрещено редактировать: `_Secrets/`, `templates/`, `.obsidian/`, `Archive/`.
+
+    Заголовки секций матчатся по точному тексту (с учётом регистра, без `#`).
+    Конец секции = следующий заголовок того же или меньшего уровня (т.е. меньшего числа `#`).
+    """
+    try:
+        return _ops_edit_note(path, mode, payload)
+    except Exception as exc:
+        logger.exception("edit_note failed")
+        return f"Error: {exc}"
+
+
+@mcp.tool()
+def move_note(source: str, destination: str) -> str:
+    """Переместить или переименовать заметку, автоматически обновив wiki-links.
+
+    `source` и `destination` — пути относительно vault или абсолютные.
+
+    Поведение:
+      - Если изменилось ТОЛЬКО имя файла (stem) — переписываются все bare-ссылки
+        `[[old]]`, `[[old|alias]]`, `[[old#heading]]` во всём vault.
+      - Если изменилась ТОЛЬКО папка (stem прежний) — ссылки не трогаются:
+        Obsidian резолвит их по имени файла.
+      - Pathful-ссылки `[[Folder/old]]` репортятся как требующие ручной правки
+        (редкий кейс, обычно Obsidian их не использует).
+
+    Использовать при реорганизации vault — например, перетащить заметку из корня
+    в правильную папку по правилам vault CLAUDE.md.
+
+    Запрещено перемещать в/из защищённых папок (`_Secrets/`, `templates/`, `Archive/`).
+    Для архивирования используй `delete_note`.
+
+    После выполнения watcher автоматически переиндексирует затронутые файлы.
+    """
+    try:
+        return _ops_move_note(source, destination)
+    except Exception as exc:
+        logger.exception("move_note failed")
+        return f"Error: {exc}"
+
+
+@mcp.tool()
+def delete_note(path: str, reason: str = "") -> str:
+    """Мягкое удаление: переносит заметку в `Archive/<исходная-папка>/`.
+
+    Физического удаления НЕ происходит — заметка остаётся в архиве с пометкой:
+      - `archived_at: <ISO datetime>` добавляется в frontmatter
+      - `archived_reason: "<reason>"` если указан
+
+    Wiki-links на удалённую заметку НЕ переписываются (намеренно — чтобы видеть
+    откуда она была востребована и при необходимости можно было восстановить).
+
+    `path` — относительно vault или абсолютный путь.
+    Запрещено: `_Secrets/`, `templates/`, `.obsidian/`, и сам `Archive/` (повторное архивирование).
+    """
+    try:
+        return _ops_delete_note(path, reason)
+    except Exception as exc:
+        logger.exception("delete_note failed")
         return f"Error: {exc}"
 
 
