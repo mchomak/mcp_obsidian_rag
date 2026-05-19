@@ -6,7 +6,7 @@ from config import EMBED_MODEL, OLLAMA_BASE_URL, EMBED_DIM
 
 logger = logging.getLogger(__name__)
 
-_client = ollama.Client(host=OLLAMA_BASE_URL)
+_client = ollama.Client(host=OLLAMA_BASE_URL, timeout=30.0)
 
 _MAX_RETRIES = 3
 _BACKOFF_BASE = 0.5
