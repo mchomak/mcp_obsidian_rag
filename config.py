@@ -8,6 +8,37 @@ _PROJECT_ROOT = Path(__file__).parent.resolve()
 
 load_dotenv(_PROJECT_ROOT / ".env")
 
+os.environ.setdefault("ANONYMIZED_TELEMETRY", "False")
+os.environ.setdefault("POSTHOG_DISABLED", "True")
+
+
+_LOG_LEVEL_EARLY = os.getenv("LOG_LEVEL", "INFO").strip().upper()
+_LOG_FORMAT = "%(asctime)s [%(levelname)s] pid=%(process)d %(name)s: %(message)s"
+
+_root_logger = logging.getLogger()
+_root_logger.setLevel(getattr(logging, _LOG_LEVEL_EARLY, logging.INFO))
+_root_logger.handlers.clear()
+
+_stderr_handler = logging.StreamHandler(sys.stderr)
+_stderr_handler.setFormatter(logging.Formatter(_LOG_FORMAT))
+_root_logger.addHandler(_stderr_handler)
+
+try:
+    _file_handler = logging.FileHandler(
+        _PROJECT_ROOT / "mcp_server.log",
+        mode="a",
+        encoding="utf-8",
+    )
+    _file_handler.setFormatter(logging.Formatter(_LOG_FORMAT))
+    _root_logger.addHandler(_file_handler)
+except Exception as _exc:
+    _root_logger.warning("Could not attach file log handler: %s", _exc)
+
+logging.getLogger(__name__).info(
+    "=== config.py loaded (pid=%d, level=%s) ===",
+    os.getpid(), _LOG_LEVEL_EARLY,
+)
+
 
 def _require(name: str) -> str:
     value = os.getenv(name, "").strip()
@@ -69,10 +100,4 @@ ARCHIVE_DIR_NAME: str = os.getenv("ARCHIVE_DIR_NAME", "Archive").strip() or "Arc
 COLLECTION_NAME: str = "obsidian_notes"
 EMBED_DIM: int = 768
 
-LOG_LEVEL: str = os.getenv("LOG_LEVEL", "INFO").strip().upper()
-
-logging.basicConfig(
-    level=getattr(logging, LOG_LEVEL, logging.INFO),
-    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
-    stream=sys.stderr,
-)
+LOG_LEVEL: str = _LOG_LEVEL_EARLY

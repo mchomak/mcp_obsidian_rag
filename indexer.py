@@ -38,7 +38,10 @@ def get_collection():
         return _collection
     with _init_lock:
         if _collection is None:
-            _chroma = chromadb.PersistentClient(path=str(CHROMA_DB_PATH))
+            _chroma = chromadb.PersistentClient(
+                path=str(CHROMA_DB_PATH),
+                settings=chromadb.Settings(anonymized_telemetry=False),
+            )
             _collection = _chroma.get_or_create_collection(
                 name=COLLECTION_NAME,
                 metadata={"hnsw:space": "cosine"},

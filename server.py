@@ -3,7 +3,9 @@ import logging
 import re
 import sys
 import threading
+import time
 from datetime import datetime, timezone
+from functools import wraps
 from pathlib import Path
 
 import frontmatter
@@ -30,6 +32,23 @@ from watcher import start_watching
 logger = logging.getLogger(__name__)
 
 mcp = FastMCP("obsidian-rag")
+
+
+def _logged(fn):
+    @wraps(fn)
+    def wrapper(*args, **kwargs):
+        tid = threading.get_ident()
+        logger.info("TOOL START: %s (thread=%d)", fn.__name__, tid)
+        t0 = time.monotonic()
+        try:
+            return fn(*args, **kwargs)
+        finally:
+            logger.info(
+                "TOOL END:   %s (thread=%d) in %.3fs",
+                fn.__name__, tid, time.monotonic() - t0,
+            )
+    return wrapper
+
 
 RELATED_THRESHOLD = 0.65
 RELATED_TOP_K = 3
@@ -117,6 +136,7 @@ def _find_related_notes(
 # --- Tools ---
 
 @mcp.tool()
+@_logged
 def get_vault_conventions() -> str:
     """Return the vault's approved tag vocabulary, frontmatter rules, and wiki-link conventions.
 
@@ -131,6 +151,7 @@ def get_vault_conventions() -> str:
 
 
 @mcp.tool()
+@_logged
 def search_knowledge_base(query: str) -> str:
     """Search personal knowledge base from Obsidian vault. Use this to find context about specific projects, clients, workflow procedures, past decisions, personal preferences, team members, recurring errors, or any domain knowledge stored in notes.
 
@@ -145,6 +166,7 @@ def search_knowledge_base(query: str) -> str:
 
 
 @mcp.tool()
+@_logged
 def create_note(
     title: str,
     content: str,
@@ -245,6 +267,7 @@ def create_note(
 
 
 @mcp.tool()
+@_logged
 def list_projects() -> str:
     """Return the list of unique projects from the indexed Obsidian vault. Helps identify available project contexts before performing a search or listing notes."""
     try:
@@ -255,6 +278,7 @@ def list_projects() -> str:
 
 
 @mcp.tool()
+@_logged
 def get_project_notes(project: str) -> str:
     """Return all notes for a specific project. Use when you need the full context of a project rather than a targeted semantic search."""
     project = (project or "").strip()
@@ -268,6 +292,7 @@ def get_project_notes(project: str) -> str:
 
 
 @mcp.tool()
+@_logged
 def list_notes(folder: str = "", note_type: str = "", limit: int = 200) -> str:
     """List notes in the vault filtered by folder and/or frontmatter type.
 
@@ -312,6 +337,7 @@ def list_notes(folder: str = "", note_type: str = "", limit: int = 200) -> str:
 
 
 @mcp.tool()
+@_logged
 def edit_note(path: str, mode: str, payload: dict) -> str:
     """Точечное редактирование существующей заметки.
 
@@ -353,6 +379,7 @@ def edit_note(path: str, mode: str, payload: dict) -> str:
 
 
 @mcp.tool()
+@_logged
 def move_note(source: str, destination: str) -> str:
     """Переместить или переименовать заметку, автоматически обновив wiki-links.
 
@@ -382,6 +409,7 @@ def move_note(source: str, destination: str) -> str:
 
 
 @mcp.tool()
+@_logged
 def delete_note(path: str, reason: str = "") -> str:
     """Мягкое удаление: переносит заметку в `Archive/<исходная-папка>/`.
 
@@ -400,6 +428,20 @@ def delete_note(path: str, reason: str = "") -> str:
     except Exception as exc:
         logger.exception("delete_note failed")
         return f"Error: {exc}"
+
+
+# --- Diagnostic ---
+
+@mcp.tool()
+@_logged
+def ping_tool(delay_seconds: float = 0) -> str:
+    """Diagnostic. Sleep `delay_seconds`, then return server timestamp + thread id.
+    Use to verify whether the MCP server processes tool calls in parallel:
+    call `ping_tool(delay_seconds=5)` and another tool concurrently — check log
+    timestamps to see if the second tool started before the first finished.
+    """
+    time.sleep(max(0.0, delay_seconds))
+    return f"pong t={time.time():.3f} thread={threading.get_ident()}"
 
 
 # --- Lifecycle ---
@@ -440,5 +482,8 @@ def _startup() -> None:
 
 
 if __name__ == "__main__":
+    logger.info("=== server.py __main__ start, launching _startup thread ===")
     threading.Thread(target=_startup, daemon=True).start()
+    logger.info("=== calling mcp.run() ===")
     mcp.run()
+    logger.info("=== mcp.run() returned (server stopped) ===")
