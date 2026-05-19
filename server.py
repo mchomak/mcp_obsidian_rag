@@ -1,4 +1,3 @@
-import atexit
 import logging
 import re
 import sys
@@ -27,7 +26,6 @@ from note_ops import (
     edit_note as _ops_edit_note,
     move_note as _ops_move_note,
 )
-from watcher import start_watching
 
 logger = logging.getLogger(__name__)
 
@@ -465,20 +463,7 @@ def _startup() -> None:
     except Exception:
         logger.exception("Failed to read ChromaDB collection count")
 
-    try:
-        observer = start_watching()
-
-        def _shutdown() -> None:
-            try:
-                observer.stop()
-                observer.join(timeout=5)
-                logger.info("Watcher stopped")
-            except Exception:
-                pass
-
-        atexit.register(_shutdown)
-    except Exception:
-        logger.exception("Failed to start vault watcher")
+    logger.info("Vault watcher runs in daemon (scripts/start_daemon.bat)")
 
 
 if __name__ == "__main__":

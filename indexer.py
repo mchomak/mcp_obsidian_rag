@@ -15,7 +15,8 @@ from tqdm import tqdm
 from config import (
     CHUNK_OVERLAP,
     CHUNK_SIZE,
-    CHROMA_DB_PATH,
+    CHROMA_HOST,
+    CHROMA_PORT,
     COLLECTION_NAME,
     EXCLUDED_DIRS,
     TOP_K_RESULTS,
@@ -38,10 +39,19 @@ def get_collection():
         return _collection
     with _init_lock:
         if _collection is None:
-            _chroma = chromadb.PersistentClient(
-                path=str(CHROMA_DB_PATH),
-                settings=chromadb.Settings(anonymized_telemetry=False),
-            )
+            try:
+                _chroma = chromadb.HttpClient(
+                    host=CHROMA_HOST,
+                    port=CHROMA_PORT,
+                    settings=chromadb.Settings(anonymized_telemetry=False),
+                )
+                _chroma.heartbeat()
+            except Exception as exc:
+                raise RuntimeError(
+                    f"RAG daemon недоступен на {CHROMA_HOST}:{CHROMA_PORT}. "
+                    f"Запусти scripts\\start_daemon.bat и подожди несколько секунд. "
+                    f"Детали: {exc}"
+                ) from exc
             _collection = _chroma.get_or_create_collection(
                 name=COLLECTION_NAME,
                 metadata={"hnsw:space": "cosine"},

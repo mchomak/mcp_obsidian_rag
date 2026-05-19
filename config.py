@@ -77,6 +77,9 @@ if not VAULT_PATH.is_dir():
 CHROMA_DB_PATH: Path = _normalize_path(os.getenv("CHROMA_DB_PATH", "./data/chromadb"))
 CHROMA_DB_PATH.mkdir(parents=True, exist_ok=True)
 
+CHROMA_HOST: str = os.getenv("CHROMA_HOST", "127.0.0.1").strip()
+CHROMA_PORT: int = _get_int("CHROMA_PORT", 8765)
+
 EMBED_MODEL: str = os.getenv("EMBED_MODEL", "nomic-embed-text").strip()
 OLLAMA_BASE_URL: str = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434").strip()
 
