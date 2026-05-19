@@ -2083,3 +2083,284 @@ chromadb.errors.InternalError: Error executing plan: Error sending backfill requ
 2026-05-19 17:54:10,072 [DEBUG] pid=15152 httpcore.http11: response_closed.complete
 2026-05-19 17:54:10,133 [DEBUG] pid=15152 chromadb.config: Starting component System
 2026-05-19 17:54:10,133 [DEBUG] pid=15152 chromadb.config: Starting component Posthog
+2026-05-19 17:54:10,850 [INFO] pid=26156 config: === config.py loaded (pid=26156, level=DEBUG) ===
+2026-05-19 17:54:12,051 [DEBUG] pid=26156 mcp.server.lowlevel.server: Initializing server 'obsidian-rag'
+2026-05-19 17:54:12,051 [DEBUG] pid=26156 mcp.server.lowlevel.server: Registering handler for ListToolsRequest
+2026-05-19 17:54:12,051 [DEBUG] pid=26156 mcp.server.lowlevel.server: Registering handler for CallToolRequest
+2026-05-19 17:54:12,051 [DEBUG] pid=26156 mcp.server.lowlevel.server: Registering handler for ListResourcesRequest
+2026-05-19 17:54:12,051 [DEBUG] pid=26156 mcp.server.lowlevel.server: Registering handler for ReadResourceRequest
+2026-05-19 17:54:12,051 [DEBUG] pid=26156 mcp.server.lowlevel.server: Registering handler for PromptListRequest
+2026-05-19 17:54:12,051 [DEBUG] pid=26156 mcp.server.lowlevel.server: Registering handler for GetPromptRequest
+2026-05-19 17:54:12,051 [DEBUG] pid=26156 mcp.server.lowlevel.server: Registering handler for ListResourceTemplatesRequest
+2026-05-19 17:54:12,057 [INFO] pid=26156 __main__: === server.py __main__ start, launching _startup thread ===
+2026-05-19 17:54:12,057 [DEBUG] pid=26156 httpcore.connection: connect_tcp.started host='localhost' port=11434 local_address=None timeout=30.0 socket_options=None
+2026-05-19 17:54:12,057 [INFO] pid=26156 __main__: === calling mcp.run() ===
+2026-05-19 17:54:12,057 [DEBUG] pid=26156 asyncio: Using proactor: IocpProactor
+2026-05-19 17:54:12,078 [DEBUG] pid=26156 mcp.server.lowlevel.server: Received message: root=InitializedNotification(method='notifications/initialized', params=None, jsonrpc='2.0')
+2026-05-19 17:54:12,080 [DEBUG] pid=26156 mcp.server.lowlevel.server: Received message: <mcp.shared.session.RequestResponder object at 0x00000219FF3D09D0>
+2026-05-19 17:54:12,081 [INFO] pid=26156 mcp.server.lowlevel.server: Processing request of type ListToolsRequest
+2026-05-19 17:54:12,081 [DEBUG] pid=26156 mcp.server.lowlevel.server: Dispatching request of type ListToolsRequest
+2026-05-19 17:54:12,081 [DEBUG] pid=26156 mcp.server.lowlevel.server: Response sent
+2026-05-19 17:54:12,081 [DEBUG] pid=26156 mcp.server.lowlevel.server: Received message: <mcp.shared.session.RequestResponder object at 0x00000219FF498910>
+2026-05-19 17:54:12,081 [INFO] pid=26156 mcp.server.lowlevel.server: Processing request of type ListPromptsRequest
+2026-05-19 17:54:12,082 [DEBUG] pid=26156 mcp.server.lowlevel.server: Dispatching request of type ListPromptsRequest
+2026-05-19 17:54:12,082 [DEBUG] pid=26156 mcp.server.lowlevel.server: Received message: <mcp.shared.session.RequestResponder object at 0x00000219FF1D6E90>
+2026-05-19 17:54:12,082 [INFO] pid=26156 mcp.server.lowlevel.server: Processing request of type ListResourcesRequest
+2026-05-19 17:54:12,082 [DEBUG] pid=26156 mcp.server.lowlevel.server: Dispatching request of type ListResourcesRequest
+2026-05-19 17:54:12,082 [DEBUG] pid=26156 mcp.server.fastmcp.resources.resource_manager: Listing resources
+2026-05-19 17:54:12,083 [DEBUG] pid=26156 mcp.server.lowlevel.server: Response sent
+2026-05-19 17:54:12,093 [DEBUG] pid=26156 mcp.server.lowlevel.server: Response sent
+2026-05-19 17:54:14,101 [DEBUG] pid=26156 httpcore.connection: connect_tcp.complete return_value=<httpcore._backends.sync.SyncStream object at 0x00000219FF498B50>
+2026-05-19 17:54:14,101 [DEBUG] pid=26156 httpcore.http11: send_request_headers.started request=<Request [b'GET']>
+2026-05-19 17:54:14,101 [DEBUG] pid=26156 httpcore.http11: send_request_headers.complete
+2026-05-19 17:54:14,102 [DEBUG] pid=26156 httpcore.http11: send_request_body.started request=<Request [b'GET']>
+2026-05-19 17:54:14,102 [DEBUG] pid=26156 httpcore.http11: send_request_body.complete
+2026-05-19 17:54:14,102 [DEBUG] pid=26156 httpcore.http11: receive_response_headers.started request=<Request [b'GET']>
+2026-05-19 17:54:14,106 [DEBUG] pid=26156 httpcore.http11: receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Date', b'Tue, 19 May 2026 14:54:14 GMT'), (b'Content-Length', b'1020')])
+2026-05-19 17:54:14,107 [INFO] pid=26156 httpx: HTTP Request: GET http://localhost:11434/api/tags "HTTP/1.1 200 OK"
+2026-05-19 17:54:14,107 [DEBUG] pid=26156 httpcore.http11: receive_response_body.started request=<Request [b'GET']>
+2026-05-19 17:54:14,107 [DEBUG] pid=26156 httpcore.http11: receive_response_body.complete
+2026-05-19 17:54:14,107 [DEBUG] pid=26156 httpcore.http11: response_closed.started
+2026-05-19 17:54:14,107 [DEBUG] pid=26156 httpcore.http11: response_closed.complete
+2026-05-19 17:54:14,162 [DEBUG] pid=26156 chromadb.config: Starting component System
+2026-05-19 17:54:14,162 [DEBUG] pid=26156 chromadb.config: Starting component Posthog
+2026-05-19 17:54:14,228 [INFO] pid=26156 __main__: Indexed chunks loaded: 780
+2026-05-19 17:54:14,229 [INFO] pid=26156 watcher: Watching vault: C:\Users\McHomak\Projects\Obsidian_Vault (debounce: 500ms)
+2026-05-19 17:54:23,191 [DEBUG] pid=26156 mcp.server.lowlevel.server: Received message: <mcp.shared.session.RequestResponder object at 0x00000219FF4D1250>
+2026-05-19 17:54:23,193 [INFO] pid=26156 mcp.server.lowlevel.server: Processing request of type CallToolRequest
+2026-05-19 17:54:23,193 [DEBUG] pid=26156 mcp.server.lowlevel.server: Dispatching request of type CallToolRequest
+2026-05-19 17:54:23,193 [INFO] pid=26156 __main__: TOOL START: list_notes (thread=7868)
+2026-05-19 17:54:23,217 [INFO] pid=26156 __main__: TOOL END:   list_notes (thread=7868) in 0.032s
+2026-05-19 17:54:23,224 [DEBUG] pid=26156 mcp.server.lowlevel.server: Response sent
+2026-05-19 17:54:23,311 [DEBUG] pid=26156 mcp.server.lowlevel.server: Received message: <mcp.shared.session.RequestResponder object at 0x00000219FF1D6E90>
+2026-05-19 17:54:23,311 [INFO] pid=26156 mcp.server.lowlevel.server: Processing request of type CallToolRequest
+2026-05-19 17:54:23,311 [DEBUG] pid=26156 mcp.server.lowlevel.server: Dispatching request of type CallToolRequest
+2026-05-19 17:54:23,311 [INFO] pid=26156 __main__: TOOL START: search_knowledge_base (thread=7868)
+2026-05-19 17:54:23,312 [DEBUG] pid=26156 httpcore.connection: close.started
+2026-05-19 17:54:23,313 [DEBUG] pid=26156 httpcore.connection: close.complete
+2026-05-19 17:54:23,313 [DEBUG] pid=26156 httpcore.connection: connect_tcp.started host='localhost' port=11434 local_address=None timeout=30.0 socket_options=None
+2026-05-19 17:54:25,363 [DEBUG] pid=26156 httpcore.connection: connect_tcp.complete return_value=<httpcore._backends.sync.SyncStream object at 0x00000219FF46F6D0>
+2026-05-19 17:54:25,364 [DEBUG] pid=26156 httpcore.http11: send_request_headers.started request=<Request [b'POST']>
+2026-05-19 17:54:25,364 [DEBUG] pid=26156 httpcore.http11: send_request_headers.complete
+2026-05-19 17:54:25,366 [DEBUG] pid=26156 httpcore.http11: send_request_body.started request=<Request [b'POST']>
+2026-05-19 17:54:25,367 [DEBUG] pid=26156 httpcore.http11: send_request_body.complete
+2026-05-19 17:54:25,367 [DEBUG] pid=26156 httpcore.http11: receive_response_headers.started request=<Request [b'POST']>
+2026-05-19 17:54:26,242 [DEBUG] pid=26156 httpcore.http11: receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Date', b'Tue, 19 May 2026 14:54:26 GMT'), (b'Transfer-Encoding', b'chunked')])
+2026-05-19 17:54:26,242 [INFO] pid=26156 httpx: HTTP Request: POST http://localhost:11434/api/embed "HTTP/1.1 200 OK"
+2026-05-19 17:54:26,243 [DEBUG] pid=26156 httpcore.http11: receive_response_body.started request=<Request [b'POST']>
+2026-05-19 17:54:26,243 [DEBUG] pid=26156 httpcore.http11: receive_response_body.complete
+2026-05-19 17:54:26,243 [DEBUG] pid=26156 httpcore.http11: response_closed.started
+2026-05-19 17:54:26,243 [DEBUG] pid=26156 httpcore.http11: response_closed.complete
+2026-05-19 17:54:26,243 [INFO] pid=26156 __main__: TOOL END:   search_knowledge_base (thread=7868) in 2.922s
+2026-05-19 17:54:26,243 [DEBUG] pid=26156 mcp.server.lowlevel.server: Response sent
+2026-05-19 17:54:33,004 [DEBUG] pid=26156 mcp.server.lowlevel.server: Received message: <mcp.shared.session.RequestResponder object at 0x00000219FDE15B50>
+2026-05-19 17:54:33,004 [INFO] pid=26156 mcp.server.lowlevel.server: Processing request of type CallToolRequest
+2026-05-19 17:54:33,004 [DEBUG] pid=26156 mcp.server.lowlevel.server: Dispatching request of type CallToolRequest
+2026-05-19 17:54:33,004 [INFO] pid=26156 __main__: TOOL START: move_note (thread=7868)
+2026-05-19 17:54:33,006 [INFO] pid=26156 __main__: TOOL END:   move_note (thread=7868) in 0.000s
+2026-05-19 17:54:33,007 [DEBUG] pid=26156 mcp.server.lowlevel.server: Response sent
+2026-05-19 17:54:33,698 [INFO] pid=26156 indexer: Removed Linear models.md (2 chunks)
+2026-05-19 17:54:33,699 [DEBUG] pid=26156 httpcore.connection: close.started
+2026-05-19 17:54:33,699 [DEBUG] pid=26156 httpcore.connection: close.complete
+2026-05-19 17:54:33,699 [DEBUG] pid=26156 httpcore.connection: connect_tcp.started host='localhost' port=11434 local_address=None timeout=30.0 socket_options=None
+2026-05-19 17:54:33,725 [INFO] pid=6976 indexer: Removed Linear models.md (2 chunks)
+2026-05-19 17:54:33,725 [DEBUG] pid=6976 httpcore.connection: close.started
+2026-05-19 17:54:33,725 [DEBUG] pid=6976 httpcore.connection: close.complete
+2026-05-19 17:54:33,731 [DEBUG] pid=6976 httpcore.connection: connect_tcp.started host='localhost' port=11434 local_address=None timeout=30.0 socket_options=None
+2026-05-19 17:54:33,753 [INFO] pid=28280 indexer: Removed Linear models.md (2 chunks)
+2026-05-19 17:54:33,753 [DEBUG] pid=28280 httpcore.connection: close.started
+2026-05-19 17:54:33,755 [DEBUG] pid=28280 httpcore.connection: close.complete
+2026-05-19 17:54:33,755 [DEBUG] pid=28280 httpcore.connection: connect_tcp.started host='localhost' port=11434 local_address=None timeout=30.0 socket_options=None
+2026-05-19 17:54:35,729 [DEBUG] pid=26156 httpcore.connection: connect_tcp.complete return_value=<httpcore._backends.sync.SyncStream object at 0x00000219FF521790>
+2026-05-19 17:54:35,731 [DEBUG] pid=26156 httpcore.http11: send_request_headers.started request=<Request [b'POST']>
+2026-05-19 17:54:35,731 [DEBUG] pid=26156 httpcore.http11: send_request_headers.complete
+2026-05-19 17:54:35,731 [DEBUG] pid=26156 httpcore.http11: send_request_body.started request=<Request [b'POST']>
+2026-05-19 17:54:35,733 [DEBUG] pid=26156 httpcore.http11: send_request_body.complete
+2026-05-19 17:54:35,733 [DEBUG] pid=26156 httpcore.http11: receive_response_headers.started request=<Request [b'POST']>
+2026-05-19 17:54:35,769 [DEBUG] pid=6976 httpcore.connection: connect_tcp.complete return_value=<httpcore._backends.sync.SyncStream object at 0x00000210A89F0650>
+2026-05-19 17:54:35,770 [DEBUG] pid=6976 httpcore.http11: send_request_headers.started request=<Request [b'POST']>
+2026-05-19 17:54:35,770 [DEBUG] pid=6976 httpcore.http11: send_request_headers.complete
+2026-05-19 17:54:35,771 [DEBUG] pid=6976 httpcore.http11: send_request_body.started request=<Request [b'POST']>
+2026-05-19 17:54:35,771 [DEBUG] pid=6976 httpcore.http11: send_request_body.complete
+2026-05-19 17:54:35,771 [DEBUG] pid=6976 httpcore.http11: receive_response_headers.started request=<Request [b'POST']>
+2026-05-19 17:54:35,788 [DEBUG] pid=28280 httpcore.connection: connect_tcp.complete return_value=<httpcore._backends.sync.SyncStream object at 0x000001ECC3114990>
+2026-05-19 17:54:35,789 [DEBUG] pid=28280 httpcore.http11: send_request_headers.started request=<Request [b'POST']>
+2026-05-19 17:54:35,789 [DEBUG] pid=28280 httpcore.http11: send_request_headers.complete
+2026-05-19 17:54:35,789 [DEBUG] pid=28280 httpcore.http11: send_request_body.started request=<Request [b'POST']>
+2026-05-19 17:54:35,789 [DEBUG] pid=28280 httpcore.http11: send_request_body.complete
+2026-05-19 17:54:35,789 [DEBUG] pid=28280 httpcore.http11: receive_response_headers.started request=<Request [b'POST']>
+2026-05-19 17:54:35,853 [DEBUG] pid=26156 httpcore.http11: receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Date', b'Tue, 19 May 2026 14:54:35 GMT'), (b'Transfer-Encoding', b'chunked')])
+2026-05-19 17:54:35,853 [INFO] pid=26156 httpx: HTTP Request: POST http://localhost:11434/api/embed "HTTP/1.1 200 OK"
+2026-05-19 17:54:35,853 [DEBUG] pid=26156 httpcore.http11: receive_response_body.started request=<Request [b'POST']>
+2026-05-19 17:54:35,853 [DEBUG] pid=26156 httpcore.http11: receive_response_body.complete
+2026-05-19 17:54:35,853 [DEBUG] pid=26156 httpcore.http11: response_closed.started
+2026-05-19 17:54:35,853 [DEBUG] pid=26156 httpcore.http11: response_closed.complete
+2026-05-19 17:54:35,911 [INFO] pid=26156 indexer: Indexed Notes/Learning/ML/Linear models.md (2 chunks)
+2026-05-19 17:54:35,928 [DEBUG] pid=6976 httpcore.http11: receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Date', b'Tue, 19 May 2026 14:54:35 GMT'), (b'Transfer-Encoding', b'chunked')])
+2026-05-19 17:54:35,928 [INFO] pid=6976 httpx: HTTP Request: POST http://localhost:11434/api/embed "HTTP/1.1 200 OK"
+2026-05-19 17:54:35,928 [DEBUG] pid=6976 httpcore.http11: receive_response_body.started request=<Request [b'POST']>
+2026-05-19 17:54:35,928 [DEBUG] pid=6976 httpcore.http11: receive_response_body.complete
+2026-05-19 17:54:35,928 [DEBUG] pid=6976 httpcore.http11: response_closed.started
+2026-05-19 17:54:35,928 [DEBUG] pid=6976 httpcore.http11: response_closed.complete
+2026-05-19 17:54:36,006 [DEBUG] pid=28280 httpcore.http11: receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Date', b'Tue, 19 May 2026 14:54:36 GMT'), (b'Transfer-Encoding', b'chunked')])
+2026-05-19 17:54:36,007 [INFO] pid=28280 httpx: HTTP Request: POST http://localhost:11434/api/embed "HTTP/1.1 200 OK"
+2026-05-19 17:54:36,007 [DEBUG] pid=28280 httpcore.http11: receive_response_body.started request=<Request [b'POST']>
+2026-05-19 17:54:36,007 [DEBUG] pid=28280 httpcore.http11: receive_response_body.complete
+2026-05-19 17:54:36,007 [DEBUG] pid=28280 httpcore.http11: response_closed.started
+2026-05-19 17:54:36,007 [DEBUG] pid=28280 httpcore.http11: response_closed.complete
+2026-05-19 17:54:36,075 [INFO] pid=6976 indexer: Indexed Notes/Learning/ML/Linear models.md (2 chunks)
+2026-05-19 17:54:36,102 [INFO] pid=28280 indexer: Indexed Notes/Learning/ML/Linear models.md (2 chunks)
+2026-05-19 17:54:39,364 [DEBUG] pid=26156 mcp.server.lowlevel.server: Received message: <mcp.shared.session.RequestResponder object at 0x00000219FF3BCF90>
+2026-05-19 17:54:39,364 [INFO] pid=26156 mcp.server.lowlevel.server: Processing request of type CallToolRequest
+2026-05-19 17:54:39,364 [DEBUG] pid=26156 mcp.server.lowlevel.server: Dispatching request of type CallToolRequest
+2026-05-19 17:54:39,364 [INFO] pid=26156 __main__: TOOL START: move_note (thread=7868)
+2026-05-19 17:54:39,366 [INFO] pid=26156 __main__: TOOL END:   move_note (thread=7868) in 0.000s
+2026-05-19 17:54:39,367 [DEBUG] pid=26156 mcp.server.lowlevel.server: Response sent
+2026-05-19 17:54:40,012 [INFO] pid=6976 indexer: Removed Transfer Learning.md (1 chunks)
+2026-05-19 17:54:40,019 [DEBUG] pid=6976 httpcore.http11: send_request_headers.started request=<Request [b'POST']>
+2026-05-19 17:54:40,019 [DEBUG] pid=6976 httpcore.http11: send_request_headers.complete
+2026-05-19 17:54:40,020 [DEBUG] pid=6976 httpcore.http11: send_request_body.started request=<Request [b'POST']>
+2026-05-19 17:54:40,020 [DEBUG] pid=6976 httpcore.http11: send_request_body.complete
+2026-05-19 17:54:40,020 [DEBUG] pid=6976 httpcore.http11: receive_response_headers.started request=<Request [b'POST']>
+2026-05-19 17:54:40,033 [INFO] pid=28280 indexer: Removed Transfer Learning.md (1 chunks)
+2026-05-19 17:54:40,050 [DEBUG] pid=28280 httpcore.http11: send_request_headers.started request=<Request [b'POST']>
+2026-05-19 17:54:40,051 [DEBUG] pid=28280 httpcore.http11: send_request_headers.complete
+2026-05-19 17:54:40,051 [DEBUG] pid=28280 httpcore.http11: send_request_body.started request=<Request [b'POST']>
+2026-05-19 17:54:40,051 [DEBUG] pid=28280 httpcore.http11: send_request_body.complete
+2026-05-19 17:54:40,051 [DEBUG] pid=28280 httpcore.http11: receive_response_headers.started request=<Request [b'POST']>
+2026-05-19 17:54:40,061 [DEBUG] pid=6976 httpcore.http11: receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Date', b'Tue, 19 May 2026 14:54:40 GMT'), (b'Transfer-Encoding', b'chunked')])
+2026-05-19 17:54:40,061 [INFO] pid=6976 httpx: HTTP Request: POST http://localhost:11434/api/embed "HTTP/1.1 200 OK"
+2026-05-19 17:54:40,061 [DEBUG] pid=6976 httpcore.http11: receive_response_body.started request=<Request [b'POST']>
+2026-05-19 17:54:40,061 [DEBUG] pid=6976 httpcore.http11: receive_response_body.complete
+2026-05-19 17:54:40,061 [DEBUG] pid=6976 httpcore.http11: response_closed.started
+2026-05-19 17:54:40,061 [DEBUG] pid=6976 httpcore.http11: response_closed.complete
+2026-05-19 17:54:40,089 [DEBUG] pid=28280 httpcore.http11: receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Date', b'Tue, 19 May 2026 14:54:40 GMT'), (b'Transfer-Encoding', b'chunked')])
+2026-05-19 17:54:40,089 [INFO] pid=28280 httpx: HTTP Request: POST http://localhost:11434/api/embed "HTTP/1.1 200 OK"
+2026-05-19 17:54:40,089 [DEBUG] pid=28280 httpcore.http11: receive_response_body.started request=<Request [b'POST']>
+2026-05-19 17:54:40,089 [DEBUG] pid=28280 httpcore.http11: receive_response_body.complete
+2026-05-19 17:54:40,089 [DEBUG] pid=28280 httpcore.http11: response_closed.started
+2026-05-19 17:54:40,089 [DEBUG] pid=28280 httpcore.http11: response_closed.complete
+2026-05-19 17:54:40,137 [INFO] pid=26156 indexer: Removed Transfer Learning.md (1 chunks)
+2026-05-19 17:54:40,143 [DEBUG] pid=26156 httpcore.http11: send_request_headers.started request=<Request [b'POST']>
+2026-05-19 17:54:40,144 [DEBUG] pid=26156 httpcore.http11: send_request_headers.complete
+2026-05-19 17:54:40,144 [DEBUG] pid=26156 httpcore.http11: send_request_body.started request=<Request [b'POST']>
+2026-05-19 17:54:40,144 [DEBUG] pid=26156 httpcore.http11: send_request_body.complete
+2026-05-19 17:54:40,144 [DEBUG] pid=26156 httpcore.http11: receive_response_headers.started request=<Request [b'POST']>
+2026-05-19 17:54:40,185 [DEBUG] pid=26156 httpcore.http11: receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Date', b'Tue, 19 May 2026 14:54:40 GMT'), (b'Transfer-Encoding', b'chunked')])
+2026-05-19 17:54:40,185 [INFO] pid=26156 httpx: HTTP Request: POST http://localhost:11434/api/embed "HTTP/1.1 200 OK"
+2026-05-19 17:54:40,186 [DEBUG] pid=26156 httpcore.http11: receive_response_body.started request=<Request [b'POST']>
+2026-05-19 17:54:40,186 [DEBUG] pid=26156 httpcore.http11: receive_response_body.complete
+2026-05-19 17:54:40,186 [DEBUG] pid=26156 httpcore.http11: response_closed.started
+2026-05-19 17:54:40,186 [DEBUG] pid=26156 httpcore.http11: response_closed.complete
+2026-05-19 17:54:40,201 [INFO] pid=6976 indexer: Indexed Notes/Learning/ML/Transfer Learning.md (1 chunks)
+2026-05-19 17:54:40,283 [INFO] pid=28280 indexer: Indexed Notes/Learning/ML/Transfer Learning.md (1 chunks)
+2026-05-19 17:54:40,355 [INFO] pid=26156 indexer: Indexed Notes/Learning/ML/Transfer Learning.md (1 chunks)
+2026-05-19 17:54:47,314 [DEBUG] pid=26156 mcp.server.lowlevel.server: Received message: <mcp.shared.session.RequestResponder object at 0x00000219FF43B990>
+2026-05-19 17:54:47,314 [INFO] pid=26156 mcp.server.lowlevel.server: Processing request of type CallToolRequest
+2026-05-19 17:54:47,316 [DEBUG] pid=26156 mcp.server.lowlevel.server: Dispatching request of type CallToolRequest
+2026-05-19 17:54:47,316 [INFO] pid=26156 __main__: TOOL START: move_note (thread=7868)
+2026-05-19 17:54:47,326 [INFO] pid=26156 __main__: TOOL END:   move_note (thread=7868) in 0.016s
+2026-05-19 17:54:47,327 [DEBUG] pid=26156 mcp.server.lowlevel.server: Response sent
+2026-05-19 17:54:47,991 [INFO] pid=28280 indexer: Removed Binary classification.md (1 chunks)
+2026-05-19 17:54:47,991 [DEBUG] pid=28280 httpcore.connection: close.started
+2026-05-19 17:54:47,995 [DEBUG] pid=28280 httpcore.connection: close.complete
+2026-05-19 17:54:47,995 [DEBUG] pid=28280 httpcore.connection: connect_tcp.started host='localhost' port=11434 local_address=None timeout=30.0 socket_options=None
+2026-05-19 17:54:48,008 [INFO] pid=26156 indexer: Removed Binary classification.md (1 chunks)
+2026-05-19 17:54:48,012 [DEBUG] pid=26156 httpcore.connection: close.started
+2026-05-19 17:54:48,013 [DEBUG] pid=26156 httpcore.connection: close.complete
+2026-05-19 17:54:48,013 [DEBUG] pid=26156 httpcore.connection: connect_tcp.started host='localhost' port=11434 local_address=None timeout=30.0 socket_options=None
+2026-05-19 17:54:48,029 [INFO] pid=6976 indexer: Removed Binary classification.md (1 chunks)
+2026-05-19 17:54:48,030 [DEBUG] pid=6976 httpcore.connection: close.started
+2026-05-19 17:54:48,031 [DEBUG] pid=6976 httpcore.connection: close.complete
+2026-05-19 17:54:48,031 [DEBUG] pid=6976 httpcore.connection: connect_tcp.started host='localhost' port=11434 local_address=None timeout=30.0 socket_options=None
+2026-05-19 17:54:49,843 [DEBUG] pid=26156 mcp.server.lowlevel.server: Received message: <mcp.shared.session.RequestResponder object at 0x00000219FF27D890>
+2026-05-19 17:54:49,843 [INFO] pid=26156 mcp.server.lowlevel.server: Processing request of type CallToolRequest
+2026-05-19 17:54:49,843 [DEBUG] pid=26156 mcp.server.lowlevel.server: Dispatching request of type CallToolRequest
+2026-05-19 17:54:49,843 [INFO] pid=26156 __main__: TOOL START: move_note (thread=7868)
+2026-05-19 17:54:49,854 [INFO] pid=26156 __main__: TOOL END:   move_note (thread=7868) in 0.015s
+2026-05-19 17:54:49,854 [DEBUG] pid=26156 mcp.server.lowlevel.server: Response sent
+2026-05-19 17:54:50,018 [DEBUG] pid=28280 httpcore.connection: connect_tcp.complete return_value=<httpcore._backends.sync.SyncStream object at 0x000001ECC3157190>
+2026-05-19 17:54:50,019 [DEBUG] pid=28280 httpcore.http11: send_request_headers.started request=<Request [b'POST']>
+2026-05-19 17:54:50,019 [DEBUG] pid=28280 httpcore.http11: send_request_headers.complete
+2026-05-19 17:54:50,019 [DEBUG] pid=28280 httpcore.http11: send_request_body.started request=<Request [b'POST']>
+2026-05-19 17:54:50,020 [DEBUG] pid=28280 httpcore.http11: send_request_body.complete
+2026-05-19 17:54:50,020 [DEBUG] pid=28280 httpcore.http11: receive_response_headers.started request=<Request [b'POST']>
+2026-05-19 17:54:50,058 [DEBUG] pid=26156 httpcore.connection: connect_tcp.complete return_value=<httpcore._backends.sync.SyncStream object at 0x00000219FF49B610>
+2026-05-19 17:54:50,059 [DEBUG] pid=26156 httpcore.http11: send_request_headers.started request=<Request [b'POST']>
+2026-05-19 17:54:50,059 [DEBUG] pid=26156 httpcore.http11: send_request_headers.complete
+2026-05-19 17:54:50,059 [DEBUG] pid=26156 httpcore.http11: send_request_body.started request=<Request [b'POST']>
+2026-05-19 17:54:50,059 [DEBUG] pid=26156 httpcore.http11: send_request_body.complete
+2026-05-19 17:54:50,059 [DEBUG] pid=26156 httpcore.http11: receive_response_headers.started request=<Request [b'POST']>
+2026-05-19 17:54:50,067 [DEBUG] pid=28280 httpcore.http11: receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Date', b'Tue, 19 May 2026 14:54:50 GMT'), (b'Transfer-Encoding', b'chunked')])
+2026-05-19 17:54:50,068 [INFO] pid=28280 httpx: HTTP Request: POST http://localhost:11434/api/embed "HTTP/1.1 200 OK"
+2026-05-19 17:54:50,068 [DEBUG] pid=28280 httpcore.http11: receive_response_body.started request=<Request [b'POST']>
+2026-05-19 17:54:50,068 [DEBUG] pid=28280 httpcore.http11: receive_response_body.complete
+2026-05-19 17:54:50,068 [DEBUG] pid=28280 httpcore.http11: response_closed.started
+2026-05-19 17:54:50,068 [DEBUG] pid=28280 httpcore.http11: response_closed.complete
+2026-05-19 17:54:50,079 [DEBUG] pid=6976 httpcore.connection: connect_tcp.complete return_value=<httpcore._backends.sync.SyncStream object at 0x00000210A8BA7710>
+2026-05-19 17:54:50,079 [DEBUG] pid=6976 httpcore.http11: send_request_headers.started request=<Request [b'POST']>
+2026-05-19 17:54:50,079 [DEBUG] pid=6976 httpcore.http11: send_request_headers.complete
+2026-05-19 17:54:50,080 [DEBUG] pid=6976 httpcore.http11: send_request_body.started request=<Request [b'POST']>
+2026-05-19 17:54:50,080 [DEBUG] pid=6976 httpcore.http11: send_request_body.complete
+2026-05-19 17:54:50,080 [DEBUG] pid=6976 httpcore.http11: receive_response_headers.started request=<Request [b'POST']>
+2026-05-19 17:54:50,108 [DEBUG] pid=26156 httpcore.http11: receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Date', b'Tue, 19 May 2026 14:54:50 GMT'), (b'Transfer-Encoding', b'chunked')])
+2026-05-19 17:54:50,108 [INFO] pid=26156 httpx: HTTP Request: POST http://localhost:11434/api/embed "HTTP/1.1 200 OK"
+2026-05-19 17:54:50,108 [DEBUG] pid=26156 httpcore.http11: receive_response_body.started request=<Request [b'POST']>
+2026-05-19 17:54:50,108 [DEBUG] pid=26156 httpcore.http11: receive_response_body.complete
+2026-05-19 17:54:50,108 [DEBUG] pid=26156 httpcore.http11: response_closed.started
+2026-05-19 17:54:50,108 [DEBUG] pid=26156 httpcore.http11: response_closed.complete
+2026-05-19 17:54:50,123 [INFO] pid=28280 indexer: Indexed Notes/Learning/ML/Binary classification.md (1 chunks)
+2026-05-19 17:54:50,135 [DEBUG] pid=6976 httpcore.http11: receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Date', b'Tue, 19 May 2026 14:54:50 GMT'), (b'Transfer-Encoding', b'chunked')])
+2026-05-19 17:54:50,136 [INFO] pid=6976 httpx: HTTP Request: POST http://localhost:11434/api/embed "HTTP/1.1 200 OK"
+2026-05-19 17:54:50,136 [DEBUG] pid=6976 httpcore.http11: receive_response_body.started request=<Request [b'POST']>
+2026-05-19 17:54:50,136 [DEBUG] pid=6976 httpcore.http11: receive_response_body.complete
+2026-05-19 17:54:50,136 [DEBUG] pid=6976 httpcore.http11: response_closed.started
+2026-05-19 17:54:50,136 [DEBUG] pid=6976 httpcore.http11: response_closed.complete
+2026-05-19 17:54:50,371 [INFO] pid=26156 indexer: Indexed Notes/Learning/ML/Binary classification.md (1 chunks)
+2026-05-19 17:54:50,426 [INFO] pid=6976 indexer: Indexed Notes/Learning/ML/Binary classification.md (1 chunks)
+2026-05-19 17:54:50,437 [DEBUG] pid=6976 httpcore.http11: send_request_headers.started request=<Request [b'POST']>
+2026-05-19 17:54:50,437 [DEBUG] pid=6976 httpcore.http11: send_request_headers.complete
+2026-05-19 17:54:50,438 [DEBUG] pid=6976 httpcore.http11: send_request_body.started request=<Request [b'POST']>
+2026-05-19 17:54:50,438 [DEBUG] pid=6976 httpcore.http11: send_request_body.complete
+2026-05-19 17:54:50,438 [DEBUG] pid=6976 httpcore.http11: receive_response_headers.started request=<Request [b'POST']>
+2026-05-19 17:54:50,454 [INFO] pid=26156 indexer: Removed Computer Vision (CV).md (2 chunks)
+2026-05-19 17:54:50,456 [DEBUG] pid=26156 httpcore.http11: send_request_headers.started request=<Request [b'POST']>
+2026-05-19 17:54:50,456 [DEBUG] pid=26156 httpcore.http11: send_request_headers.complete
+2026-05-19 17:54:50,456 [DEBUG] pid=26156 httpcore.http11: send_request_body.started request=<Request [b'POST']>
+2026-05-19 17:54:50,456 [DEBUG] pid=26156 httpcore.http11: send_request_body.complete
+2026-05-19 17:54:50,456 [DEBUG] pid=26156 httpcore.http11: receive_response_headers.started request=<Request [b'POST']>
+2026-05-19 17:54:50,521 [INFO] pid=28280 indexer: Removed Computer Vision (CV).md (2 chunks)
+2026-05-19 17:54:50,523 [DEBUG] pid=28280 httpcore.http11: send_request_headers.started request=<Request [b'POST']>
+2026-05-19 17:54:50,523 [DEBUG] pid=28280 httpcore.http11: send_request_headers.complete
+2026-05-19 17:54:50,523 [DEBUG] pid=28280 httpcore.http11: send_request_body.started request=<Request [b'POST']>
+2026-05-19 17:54:50,524 [DEBUG] pid=28280 httpcore.http11: send_request_body.complete
+2026-05-19 17:54:50,524 [DEBUG] pid=28280 httpcore.http11: receive_response_headers.started request=<Request [b'POST']>
+2026-05-19 17:54:50,546 [DEBUG] pid=6976 httpcore.http11: receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Date', b'Tue, 19 May 2026 14:54:50 GMT'), (b'Transfer-Encoding', b'chunked')])
+2026-05-19 17:54:50,547 [INFO] pid=6976 httpx: HTTP Request: POST http://localhost:11434/api/embed "HTTP/1.1 200 OK"
+2026-05-19 17:54:50,547 [DEBUG] pid=6976 httpcore.http11: receive_response_body.started request=<Request [b'POST']>
+2026-05-19 17:54:50,547 [DEBUG] pid=6976 httpcore.http11: receive_response_body.complete
+2026-05-19 17:54:50,547 [DEBUG] pid=6976 httpcore.http11: response_closed.started
+2026-05-19 17:54:50,547 [DEBUG] pid=6976 httpcore.http11: response_closed.complete
+2026-05-19 17:54:50,602 [INFO] pid=6976 indexer: Indexed Notes/Learning/ML/Computer Vision (CV).md (2 chunks)
+2026-05-19 17:54:50,629 [DEBUG] pid=26156 httpcore.http11: receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Date', b'Tue, 19 May 2026 14:54:50 GMT'), (b'Transfer-Encoding', b'chunked')])
+2026-05-19 17:54:50,630 [INFO] pid=26156 httpx: HTTP Request: POST http://localhost:11434/api/embed "HTTP/1.1 200 OK"
+2026-05-19 17:54:50,630 [DEBUG] pid=26156 httpcore.http11: receive_response_body.started request=<Request [b'POST']>
+2026-05-19 17:54:50,630 [DEBUG] pid=26156 httpcore.http11: receive_response_body.complete
+2026-05-19 17:54:50,630 [DEBUG] pid=26156 httpcore.http11: response_closed.started
+2026-05-19 17:54:50,630 [DEBUG] pid=26156 httpcore.http11: response_closed.complete
+2026-05-19 17:54:50,642 [DEBUG] pid=28280 httpcore.http11: receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Content-Type', b'application/json; charset=utf-8'), (b'Date', b'Tue, 19 May 2026 14:54:50 GMT'), (b'Transfer-Encoding', b'chunked')])
+2026-05-19 17:54:50,642 [INFO] pid=28280 httpx: HTTP Request: POST http://localhost:11434/api/embed "HTTP/1.1 200 OK"
+2026-05-19 17:54:50,643 [DEBUG] pid=28280 httpcore.http11: receive_response_body.started request=<Request [b'POST']>
+2026-05-19 17:54:50,643 [DEBUG] pid=28280 httpcore.http11: receive_response_body.complete
+2026-05-19 17:54:50,643 [DEBUG] pid=28280 httpcore.http11: response_closed.started
+2026-05-19 17:54:50,643 [DEBUG] pid=28280 httpcore.http11: response_closed.complete
+2026-05-19 17:54:50,880 [INFO] pid=26156 indexer: Indexed Notes/Learning/ML/Computer Vision (CV).md (2 chunks)
+2026-05-19 17:54:50,893 [INFO] pid=28280 indexer: Indexed Notes/Learning/ML/Computer Vision (CV).md (2 chunks)
+2026-05-19 17:56:23,929 [DEBUG] pid=28280 indexer: Empty body, removing if present: {{...}}.md
+2026-05-19 17:56:23,929 [DEBUG] pid=6976 indexer: Empty body, removing if present: {{...}}.md
+2026-05-19 17:56:23,935 [DEBUG] pid=26156 indexer: Empty body, removing if present: {{...}}.md
+2026-05-19 17:56:43,539 [DEBUG] pid=26156 indexer: Empty body, removing if present: {{Имя проекта}}.md
+2026-05-19 17:56:43,539 [DEBUG] pid=6976 indexer: Empty body, removing if present: {{Имя проекта}}.md
+2026-05-19 17:56:43,539 [DEBUG] pid=28280 indexer: Empty body, removing if present: {{Имя проекта}}.md
+2026-05-19 17:56:48,153 [DEBUG] pid=28280 indexer: Empty body, removing if present: {{Имя 1}}.md
+2026-05-19 17:56:48,155 [DEBUG] pid=26156 indexer: Empty body, removing if present: {{Имя 1}}.md
