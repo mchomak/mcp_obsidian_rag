@@ -268,21 +268,29 @@ def create_note(
 
     tags_list = [str(t).strip() for t in (tags or []) if str(t).strip()]
 
-    # --- Resolve target path ---
+    # --- Resolve target path (resolve() normalises any ../ in project) ---
     slug = slugify(title, lowercase=True, max_length=80) or "untitled"
-    target_dir = VAULT_PATH / "Projects" / project
+    vault_resolved = VAULT_PATH.resolve()
+    target = (VAULT_PATH / "Projects" / project / f"{slug}.md").resolve()
+
+    # Security: ensure resolved path stays inside the vault
+    try:
+        target.relative_to(vault_resolved)
+    except ValueError:
+        return f"Error: project path '{project}' resolves outside the vault"
+
+    target_dir = target.parent
     try:
         target_dir.mkdir(parents=True, exist_ok=True)
     except Exception as exc:
         logger.exception("create_note mkdir failed")
         return f"Error: cannot create directory {target_dir}: {exc}"
 
-    target = target_dir / f"{slug}.md"
     if target.exists():
         ts = datetime.now().strftime("%Y%m%d-%H%M%S")
         target = target_dir / f"{slug}-{ts}.md"
 
-    rel = target.relative_to(VAULT_PATH).as_posix()
+    rel = target.relative_to(vault_resolved).as_posix()
 
     # --- Folder + tag validation (Step 5) ---
     folder_error = _validate_for_folder(rel, note_type, tags_list)
