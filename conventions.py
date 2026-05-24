@@ -146,14 +146,20 @@ def format_conventions_for_claude() -> str:
     lines.extend([
         "## Rules for create_note",
         "",
-        "- Pick tags ONLY from the approved list above. Unknown tags trigger a warning.",
+        "- Pick tags ONLY from the approved list above. Folder rules enforce required tag "
+        "categories — violating them returns an error (not a warning). Check the folder "
+        "rules table in vault CLAUDE.md before choosing tags.",
         "- In the note `content` embed `[[Wiki-links]]` to related notes (Obsidian format, "
         "filename without `.md`). Use `search_knowledge_base` to find candidates first.",
         "- Do NOT use markdown links like `[text](path.md)` for vault notes — Obsidian "
         "will not pick them up in its graph.",
-        "- The server will automatically append a `## 🔗 Связанные заметки` section "
-        "with top semantically similar notes, deduplicated against your inline links.",
+        "- After creation, `create_note` returns RELATED NOTE CANDIDATES — semantically "
+        "similar notes you may add as `[[wiki-links]]`. They are suggestions only; the "
+        "server does NOT insert them automatically. Add them via `edit_note(find_replace)`.",
         "- `tags` argument is a list of strings; `note_type` is a single string "
         "(e.g. `error`, `decision`, `research`, `note`).",
+        "- To use a template: call `get_template(name)` to inspect its structure, then "
+        "pass `template=name` to `create_note` (omit `content`). Fill `{{placeholders}}` "
+        "afterwards with `edit_note(mode=\"find_replace\")`.",
     ])
     return "\n".join(lines)

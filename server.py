@@ -21,10 +21,17 @@ from indexer import (
     list_projects as _indexer_list_projects,
     search as _indexer_search,
 )
+from folder_rules import validate_for_folder as _validate_for_folder
 from note_ops import (
     delete_note as _ops_delete_note,
     edit_note as _ops_edit_note,
     move_note as _ops_move_note,
+    read_note as _ops_read_note,
+)
+from templates import (
+    get_template as _get_template,
+    list_templates as _list_templates,
+    load_template_body as _load_template_body,
 )
 
 logger = logging.getLogger(__name__)
@@ -165,50 +172,104 @@ def search_knowledge_base(query: str) -> str:
 
 @mcp.tool()
 @_logged
+def read_note(path: str, section: str = "") -> str:
+    """Read a note from the Obsidian vault by its vault-relative path.
+
+    Preferred over native file-read tools — use this whenever you need to see
+    the full content of a note before editing it.
+
+    Parameters:
+      `path`    — vault-relative path (e.g. "Projects/Personal/My Project/note.md")
+                  or absolute path. Must be a .md file.
+      `section` — exact heading text (without `#`) to read only that section's body.
+                  Leave empty to read the full file (frontmatter + body).
+    """
+    try:
+        return _ops_read_note(path, section if section else None)
+    except Exception as exc:
+        logger.exception("read_note failed")
+        return f"Error: {exc}"
+
+
+@mcp.tool()
+@_logged
+def get_template(name: str = "") -> str:
+    """Return the raw text of a vault template, or list available templates.
+
+    Call this BEFORE `create_note` when you want to create a structured note:
+    the template shows exact section headings and {{placeholder}} fields.
+
+    Pass the template name without prefix/suffix (e.g. "note", "idea", "decision").
+    Call with empty string or "list" to see all available templates.
+    Then use `create_note(..., template=<name>)` to create a note from that template.
+    """
+    if not name or name == "list":
+        available = _list_templates()
+        if not available:
+            return "No templates found in vault/templates/"
+        return "Available templates:\n" + "\n".join(f"- {n}" for n in available)
+    try:
+        return _get_template(name)
+    except FileNotFoundError as exc:
+        return f"Error: {exc}"
+    except Exception as exc:
+        logger.exception("get_template failed")
+        return f"Error: {exc}"
+
+
+@mcp.tool()
+@_logged
 def create_note(
     title: str,
-    content: str,
     project: str,
+    content: str = "",
     tags: list[str] | None = None,
     note_type: str = "note",
+    template: str = "",
 ) -> str:
     """Create a new note in the Obsidian vault linked to a project.
 
     BEFORE calling this tool you MUST:
-      1. Call `get_vault_conventions()` to learn the approved tag vocabulary.
-      2. Call `search_knowledge_base(<topic>)` to find related notes and embed
-         `[[Filename]]` wiki-links in `content` where they fit by meaning.
+      1. Call `get_vault_conventions()` to learn the approved tag vocabulary and folder rules.
+      2. Call `search_knowledge_base(<topic>)` to find related notes; embed `[[Filename]]`
+         wiki-links in `content` where they fit by meaning.
 
     Use proactively when encountering an unusual error (record: what happened, why, how
     fixed), making an architectural decision, or discovering something worth remembering
     across sessions. Tags must be specific and searchable.
 
-    Tag validation is permissive: unknown tags trigger a warning, not an error.
-    The server will append a `## 🔗 Связанные заметки` section with top semantically
-    similar notes (deduplicated against any wiki-links already in `content`)."""
+    Parameters:
+      `content`  — note body (markdown). Required unless `template` is set.
+                   If a block has no meaningful information, mark it `_TBD_` or leave it
+                   empty. Do NOT fill placeholders with generic filler text just for form.
+      `template` — template name (e.g. "note", "idea", "decision"). Call `get_template(name)`
+                   first to see the structure. When provided, `content` must be empty — the
+                   body comes from the template with {{placeholders}} intact; fill them
+                   afterwards with `edit_note(mode="find_replace")`.
+
+    Tag validation is strict: notes are rejected if they violate folder rules (wrong type
+    or missing required tag category). Call `get_vault_conventions()` first.
+    After creation, RELATED NOTE CANDIDATES are returned — semantically similar notes you
+    may add as [[wiki-links]] in the note via `edit_note(mode="find_replace")`."""
     title = (title or "").strip()
     project = (project or "").strip()
     content = (content or "").strip()
+    template = (template or "").strip()
     note_type = (note_type or "note").strip() or "note"
 
     if not title:
         return "Error: title is required"
     if not project:
         return "Error: project is required"
-    if not content:
-        return "Error: content is required"
+    if template and content:
+        return "Error: provide template OR content, not both"
+    if not template and not content:
+        return "Error: content is required when template is not specified"
 
     tags_list = [str(t).strip() for t in (tags or []) if str(t).strip()]
 
-    approved = get_approved_tags()
-    unknown_tags: list[str] = []
-    if approved:
-        unknown_tags = [t for t in tags_list if t not in approved]
-        if unknown_tags:
-            logger.warning("create_note: unknown tags %s", unknown_tags)
-
+    # --- Resolve target path ---
     slug = slugify(title, lowercase=True, max_length=80) or "untitled"
-
     target_dir = VAULT_PATH / "Projects" / project
     try:
         target_dir.mkdir(parents=True, exist_ok=True)
@@ -223,26 +284,50 @@ def create_note(
 
     rel = target.relative_to(VAULT_PATH).as_posix()
 
-    inline_link_stems = _extract_wiki_link_targets(content)
+    # --- Folder + tag validation (Step 5) ---
+    folder_error = _validate_for_folder(rel, note_type, tags_list)
+    if folder_error:
+        return f"Error: {folder_error}"
+
+    # --- Tag warnings ---
+    approved = get_approved_tags()
+    unknown_tags: list[str] = []
+    if approved:
+        unknown_tags = [t for t in tags_list if t not in approved]
+        if unknown_tags:
+            logger.warning("create_note: unknown tags %s", unknown_tags)
+
+    # --- Build body from template or content ---
+    now_str = datetime.now(timezone.utc).isoformat()
+    date_str = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+
+    if template:
+        try:
+            body = _load_template_body(template, title=title, date_str=date_str)
+        except FileNotFoundError as exc:
+            return f"Error: {exc}"
+        except Exception as exc:
+            logger.exception("load_template_body failed")
+            return f"Error loading template: {exc}"
+    else:
+        body = content
+
+    # --- Find related notes (Step 3: return as candidates, NOT inserted into file) ---
+    inline_link_stems = _extract_wiki_link_targets(body)
     related_stems = _find_related_notes(
-        query=f"{title}\n\n{content}",
+        query=f"{title}\n\n{body[:500]}",
         exclude_stems=inline_link_stems | {target.stem},
         exclude_source=rel,
     )
 
-    full_content = content
-    if related_stems:
-        full_content += "\n\n## 🔗 Связанные заметки\n"
-        full_content += "\n".join(f"- [[{stem}]]" for stem in related_stems)
-        full_content += "\n"
-
+    # --- Write note ---
     post = frontmatter.Post(
-        full_content,
+        body,
         title=title,
         project=project,
         tags=tags_list,
         type=note_type,
-        created=datetime.now(timezone.utc).isoformat(),
+        created=now_str,
     )
 
     try:
@@ -255,11 +340,19 @@ def create_note(
 
     out_lines = [f"Created: {rel}"]
     if related_stems:
-        out_lines.append(f"Related: {', '.join(related_stems)}")
+        out_lines.append(
+            "Related note candidates (add as [[wiki-links]] where relevant): "
+            + ", ".join(f"[[{s}]]" for s in related_stems)
+        )
     if unknown_tags:
         out_lines.append(
             f"Warning: tag(s) not in approved list — {', '.join(unknown_tags)}. "
             "Call get_vault_conventions() to see the approved set."
+        )
+    if template:
+        out_lines.append(
+            f"Template '{template}' applied. Fill {{{{...}}}} placeholders with "
+            "edit_note(mode=\"find_replace\")."
         )
     return "\n".join(out_lines)
 
@@ -343,6 +436,13 @@ def edit_note(path: str, mode: str, payload: dict) -> str:
     Если нужна радикальная переработка: `delete_note` (soft-archive) + `create_note`.
 
     Поддерживаемые `mode` + структура `payload`:
+
+      `find_replace`       — точечная замена строки во всём файле (включая frontmatter).
+                             payload: {"find": "...", "replace": "...", "expect_count": 1}
+                             Отказывает, если число совпадений ≠ expect_count (защита от
+                             случайной замены нескольких мест). По умолчанию expect_count=1.
+                             ИСПОЛЬЗУЙ ДЛЯ: отметки [x] в чеклистах, заполнения {{placeholder}},
+                             правки отдельных строк в таблицах, обновления полей frontmatter.
 
       `append_section`     — добавить НОВУЮ секцию в конец файла.
                              payload: {"heading": "Название H2", "content": "..."}

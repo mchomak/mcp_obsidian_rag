@@ -159,6 +159,29 @@ def _apply_section_edit(body: str, mode: str, heading: str, content: str) -> str
     raise ValueError(f"Unknown section mode: {mode}")
 
 
+# --- Find/replace ---
+
+def _apply_find_replace(text: str, find: str, replace: str, expect_count: int = 1) -> str:
+    """Full-file text find/replace with safety check on match count.
+
+    Refuses to apply if actual occurrences ≠ expect_count.
+    """
+    if not find:
+        raise ValueError("'find' must be a non-empty string")
+    actual = text.count(find)
+    if actual == 0:
+        raise ValueError(
+            f"String not found: {find!r}. "
+            "Check for invisible characters or whitespace differences."
+        )
+    if actual != expect_count:
+        raise ValueError(
+            f"Expected {expect_count} occurrence(s) but found {actual} for {find!r}. "
+            "Refusing to apply — adjust expect_count or use a more specific find string."
+        )
+    return text.replace(find, replace, actual)
+
+
 # --- Frontmatter operations ---
 
 def _normalize_tags(value) -> list[str]:
@@ -285,6 +308,24 @@ def _rewrite_wikilinks(old_stem: str, new_stem: str) -> LinkRewriteReport:
 
 # --- Public API ---
 
+def read_note(path: str, section: str | None = None) -> str:
+    """Read note content from vault.
+
+    - section=None: returns raw file text (frontmatter + body).
+    - section given: returns body of that specific section (heading text without #).
+    """
+    vp = _resolve_in_vault(path)
+    if section is None:
+        return vp.abs.read_text(encoding="utf-8")
+    post = frontmatter.load(vp.abs)
+    body = post.content or ""
+    bounds = _find_section_bounds(body, section.strip())
+    if bounds is None:
+        raise ValueError(f"Section '{section}' not found in {vp.rel}")
+    _, content_start, section_end = bounds
+    return body[content_start:section_end].strip()
+
+
 def edit_note(path: str, mode: str, payload: dict) -> str:
     """Точечное редактирование заметки. Полный rewrite запрещён намеренно."""
     vp = _resolve_in_vault(path)
@@ -292,6 +333,18 @@ def edit_note(path: str, mode: str, payload: dict) -> str:
 
     section_modes = {"append_section", "replace_section", "append_to_section"}
     fm_modes = {"update_frontmatter", "add_tag", "remove_tag"}
+
+    if mode == "find_replace":
+        find = payload.get("find", "")
+        replace = str(payload.get("replace", ""))
+        expect_count = int(payload.get("expect_count", 1))
+        if not isinstance(find, str) or not find:
+            raise ValueError("find_replace requires non-empty 'find'")
+        text = vp.abs.read_text(encoding="utf-8")
+        new_text = _apply_find_replace(text, find, replace, expect_count)
+        _atomic_write(vp.abs, new_text)
+        preview = find[:50] + ("…" if len(find) > 50 else "")
+        return f"OK: {vp.rel} — replaced {expect_count}x {preview!r}"
 
     if mode in section_modes:
         heading = str(payload.get("heading", "")).strip()
@@ -314,7 +367,7 @@ def edit_note(path: str, mode: str, payload: dict) -> str:
 
     raise ValueError(
         f"Unknown mode: {mode}. "
-        f"Allowed: {sorted(section_modes | fm_modes)}"
+        f"Allowed: {sorted(section_modes | fm_modes | {'find_replace'})}"
     )
 
 
